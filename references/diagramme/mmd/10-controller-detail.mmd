@@ -1,0 +1,22 @@
+flowchart TD
+    RC("Correctness") --> CTRL
+    RS("Security") --> CTRL
+    RQ("Code Quality") --> CTRL
+    CTRL("<b>Controller</b><br/>Reviews aggregieren, gewichten, entscheiden")
+
+    CTRL --> V{"Mehrheit OK?<br/>2 von 3"}
+    V -->|ja| FIN(["Finalize"])
+    V -->|nein| SEV{"Severity > 80 %?"}
+    SEV -->|nein| FIN
+    SEV -->|ja| FU{"Follow-Up<br/>sinnvoll?"}
+    FU -->|ja| FUT("Follow-Up-Ticket anlegen") --> FIN
+    FU -->|nein| N{"Versuche > N?"}
+    N -->|nein| IMPL(["zurück zur Implementierung"])
+    N -->|ja| SPL("Ticket aufteilen<br/>N Sub-Tickets, Original zu, Code revert")
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef dec fill:#E69F00,stroke:#7a5300,color:#111111
+    classDef term fill:#3f3f46,stroke:#18181b,color:#ffffff
+    class RC,RS,RQ,CTRL,FUT,SPL agent
+    class V,SEV,FU,N dec
+    class FIN,IMPL term

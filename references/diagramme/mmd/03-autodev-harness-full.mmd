@@ -1,0 +1,47 @@
+flowchart TD
+    START([neues GitHub-Issue]) --> BASE["Baseline-Tests<br/>welche Tests sind <b>vorher schon</b> rot?"]
+    BASE --> READ("Issue-Reader<br/>gh issue view + Kommentar")
+    READ --> RES("Recherche-Agent<br/>Codebase-Kontext sammeln")
+    RES --> IMPL
+
+    subgraph IMPL["Implementierung — von außen 1 Knoten, innen 4 Agents, strikt sequenziell"]
+        direction LR
+        TDD("1. TDD<br/>Tests zuerst") --> CODE("2. Implementieren")
+        CODE --> COV("3. Coverage")
+        COV --> DOCS("4. Doku")
+    end
+
+    IMPL --> QG["Quality Gates<br/>Tests + Linter + Build<br/>deterministisch, 0 Tokens"]
+    QG --> QGD{"alles grün?<br/>gegen Baseline geprüft"}
+    QGD -->|"nein — neu kaputt"| IMPL
+
+    QGD -->|ja| RC("Review: Correctness")
+    QGD -->|ja| RS("Review: Security")
+    QGD -->|ja| RQ("Review: Code Quality")
+
+    RC --> CTRL("Controller<br/>aggregiert alle Reviews")
+    RS --> CTRL
+    RQ --> CTRL
+
+    CTRL --> VOTE{"mind. 2 von 3<br/>sagen OK?"}
+    VOTE -->|ja| FIN
+    VOTE -->|nein| SEV{"Severity<br/>über Schwelle?<br/>z.B. 80 %"}
+    SEV -->|"nein — Kleinkram"| FIN
+    SEV -->|ja| FU{"Follow-Up-Ticket<br/>sinnvoll möglich?"}
+    FU -->|"ja — 90 % läuft"| FUA("Follow-Up-Agent<br/>Rest-Scope als neues Issue")
+    FUA --> FIN
+    FU -->|"nein — Code läuft gar nicht"| ATT{"Anzahl Versuche > N?"}
+    ATT -->|nein| IMPL
+    ATT -->|ja| SPLIT("Split-Agent<br/>Original-Ticket in 3-5 Sub-Tickets<br/>Original schließen, Code reverten")
+
+    FIN("Finalize-Agent<br/>Commit, PR, Issue schließen") --> DONE([fertig])
+    SPLIT --> RESTART([neue kleinere Issues<br/>Harness startet erneut])
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef det fill:#D55E00,stroke:#7a3600,color:#ffffff
+    classDef dec fill:#E69F00,stroke:#7a5300,color:#111111
+    classDef term fill:#3f3f46,stroke:#18181b,color:#ffffff
+    class READ,RES,TDD,CODE,COV,DOCS,RC,RS,RQ,CTRL,FUA,SPLIT,FIN agent
+    class BASE,QG det
+    class QGD,VOTE,SEV,FU,ATT dec
+    class START,DONE,RESTART term

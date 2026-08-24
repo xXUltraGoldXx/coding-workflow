@@ -1,0 +1,22 @@
+classDiagram
+    class DO1_Quellenliste {
+        +Quelle[] quellen
+        +string thema
+    }
+    class Quelle {
+        +string id
+        +string url
+        +string zitat  «wörtlich von der Seite»
+        +string relevanz
+    }
+    class DO2_Factsheet {
+        +Fakt[] fakten
+    }
+    class Fakt {
+        +string aussage
+        +string quelle_id  «FK auf Quelle.id»
+        +string zitat
+    }
+    DO1_Quellenliste "1" o-- "n" Quelle
+    DO2_Factsheet "1" o-- "n" Fakt
+    Quelle <.. Fakt : belegt durch

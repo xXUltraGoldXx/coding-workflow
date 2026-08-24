@@ -1,0 +1,13 @@
+flowchart LR
+    subgraph JOB1["Job 1 — von außen ein einziger Knoten"]
+        direction LR
+        IN("Job 1") --> P1("Job 1'")
+        IN --> P2("Job 1''")
+        IN --> P3("Job 1'''")
+        P1 --> SY("Job 1 Synth")
+        P2 --> SY
+        P3 --> SY
+    end
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    class IN,P1,P2,P3,SY agent

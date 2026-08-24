@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph K1["Class 1 — teuer, kompetent, wenig Fehler"]
+        M1["Fable<br/>GPT-5.6 Sol"]
+    end
+    subgraph K2["Class 2 — Arbeitspferde"]
+        M2["Opus 5<br/>Kimi K3<br/>Qwen 3.8"]
+    end
+    subgraph K3["Class 3 — billig, für Kleinkram"]
+        M3["Minimax M3<br/>DeepSeek V4 Flash<br/>GPT-5.6 T.<br/>Sonnet 5"]
+    end
+    K1 --> K2 --> K3
+
+    classDef c1 fill:#D55E00,stroke:#7a3600,color:#ffffff
+    classDef c2 fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef c3 fill:#009E73,stroke:#00503a,color:#ffffff
+    class M1 c1
+    class M2 c2
+    class M3 c3

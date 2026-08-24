@@ -1,0 +1,10 @@
+flowchart LR
+    J1("Job 1<br/>Recherche") -->|"DO1"| J2("Job 2<br/>Verdichten")
+    DO1[("DO1 — Quellenliste")]
+    J1 -.->|"produziert"| DO1
+    DO1 -.->|"konsumiert"| J2
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef data fill:#009E73,stroke:#00503a,color:#ffffff
+    class J1,J2 agent
+    class DO1 data
