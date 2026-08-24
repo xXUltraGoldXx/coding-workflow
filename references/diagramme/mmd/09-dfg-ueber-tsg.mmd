@@ -1,0 +1,32 @@
+flowchart TB
+    subgraph DFG["DFG — Data Flow Graph: WHAT flows"]
+        direction LR
+        DO1[("DO1<br/>source list")] --> M(( ))
+        DO2[("DO2<br/>repo/domain context")] --> M
+        M --> DO3[("DO3<br/>briefing")]
+        M --> DO4[("DO4<br/>expanded sources")]
+    end
+
+    subgraph TSG["TSG — Task Schedule Graph: WHO runs WHEN"]
+        direction LR
+        T1("T1 — research") --> SYNC{{"sync barrier<br/>waits for T1 AND T3"}}
+        T3("T3 — load context") --> SYNC
+        SYNC --> T2("T2 — condense")
+        T2 --> T4("T4 — write briefing")
+        T2 --> T5("T5 — expand sources")
+    end
+
+    DO1 -. "produced by" .- T1
+    DO2 -. "produced by" .- T3
+    DO1 -. "input to" .- T2
+    DO2 -. "input to" .- T2
+    DO3 -. "produced by" .- T4
+    DO4 -. "produced by" .- T5
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef data fill:#009E73,stroke:#00503a,color:#ffffff
+    classDef sync fill:#E69F00,stroke:#7a5300,color:#111111
+    class T1,T2,T3,T4,T5 agent
+    class DO1,DO2,DO3,DO4 data
+    class SYNC sync
+    style M fill:#009E73,stroke:#00503a,color:#ffffff

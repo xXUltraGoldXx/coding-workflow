@@ -1,0 +1,13 @@
+flowchart LR
+    START([Start]) --> J("Job")
+    J --> IF{"if"}
+    IF -->|Case A| A("Job A")
+    IF -->|Case B| B("Job B")
+    IF -->|Case C| C("Job C")
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef term fill:#3f3f46,stroke:#18181b,color:#ffffff
+    classDef dec fill:#E69F00,stroke:#7a5300,color:#111111
+    class J,A,B,C agent
+    class START term
+    class IF dec

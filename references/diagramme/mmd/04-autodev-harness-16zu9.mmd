@@ -1,0 +1,29 @@
+flowchart LR
+    START([Issue]) --> BASE["Baseline<br/>tests"] --> READ("Read<br/>issue") --> RES("Research")
+    RES --> IMPL("Implementation<br/><small>TDD -> Code -> Coverage -> Docs</small>")
+    IMPL --> QG{"Quality gates<br/>tests + linter<br/>0 tokens"}
+    QG -->|"red"| IMPL
+
+    QG -->|"green"| RC("Correctness")
+    QG -->|"green"| RS("Security")
+    QG -->|"green"| RQ("Quality")
+    RC --> CTRL("Controller")
+    RS --> CTRL
+    RQ --> CTRL
+
+    CTRL --> D{"2/3 OK?<br/>else: severity?<br/>else: follow-up?<br/>else: attempts > N?"}
+    D -->|"OK / minor"| FIN("Finalize")
+    D -->|"follow-up"| FIN
+    D -->|"rework"| IMPL
+    D -->|"attempts > N"| SPLIT("Split<br/>ticket")
+    FIN --> DONE([done])
+    SPLIT --> DONE
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef det fill:#D55E00,stroke:#7a3600,color:#ffffff
+    classDef dec fill:#E69F00,stroke:#7a5300,color:#111111
+    classDef term fill:#3f3f46,stroke:#18181b,color:#ffffff
+    class READ,RES,IMPL,RC,RS,RQ,CTRL,FIN,SPLIT agent
+    class BASE det
+    class QG,D dec
+    class START,DONE term

@@ -1,0 +1,22 @@
+flowchart TD
+    RC("Correctness") --> CTRL
+    RS("Security") --> CTRL
+    RQ("Code Quality") --> CTRL
+    CTRL("<b>Controller</b><br/>aggregate, weigh, decide on reviews")
+
+    CTRL --> V{"majority OK?<br/>2 of 3"}
+    V -->|yes| FIN(["Finalize"])
+    V -->|no| SEV{"severity > 80%?"}
+    SEV -->|no| FIN
+    SEV -->|yes| FU{"follow-up<br/>feasible?"}
+    FU -->|yes| FUT("create follow-up ticket") --> FIN
+    FU -->|no| N{"attempts > N?"}
+    N -->|no| IMPL(["back to implementation"])
+    N -->|yes| SPL("split ticket<br/>N sub-tickets, close original, revert code")
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef dec fill:#E69F00,stroke:#7a5300,color:#111111
+    classDef term fill:#3f3f46,stroke:#18181b,color:#ffffff
+    class RC,RS,RQ,CTRL,FUT,SPL agent
+    class V,SEV,FU,N dec
+    class FIN,IMPL term

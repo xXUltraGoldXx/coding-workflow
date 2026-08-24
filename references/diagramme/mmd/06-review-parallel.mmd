@@ -1,0 +1,11 @@
+flowchart TB
+    PI("Impl v1") --> PC("Correctness")
+    PI --> PS("Security")
+    PI --> PQ("Quality")
+    PC --> PCT("Controller<br/>all feedback bundled")
+    PS --> PCT
+    PQ --> PCT
+    PCT -->|"once, back with everything at once"| PI2("Impl v2")
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    class PI,PC,PS,PQ,PCT,PI2 agent

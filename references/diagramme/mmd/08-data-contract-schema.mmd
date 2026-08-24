@@ -1,0 +1,22 @@
+classDiagram
+    class DO1_SourceList {
+        +Source[] sources
+        +string topic
+    }
+    class Source {
+        +string id
+        +string url
+        +string quote  «verbatim from the page»
+        +string relevance
+    }
+    class DO2_Factsheet {
+        +Fact[] facts
+    }
+    class Fact {
+        +string statement
+        +string source_id  «FK to Source.id»
+        +string quote
+    }
+    DO1_SourceList "1" o-- "n" Source
+    DO2_Factsheet "1" o-- "n" Fact
+    Source <.. Fact : substantiated by

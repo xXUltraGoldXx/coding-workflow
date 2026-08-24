@@ -1,0 +1,47 @@
+flowchart TD
+    START([new GitHub issue]) --> BASE["Baseline tests<br/>which tests are <b>already</b> red beforehand?"]
+    BASE --> READ("Issue reader<br/>gh issue view + comment")
+    READ --> RES("Research agent<br/>gather codebase context")
+    RES --> IMPL
+
+    subgraph IMPL["Implementation — 1 node from the outside, 4 agents inside, strictly sequential"]
+        direction LR
+        TDD("1. TDD<br/>tests first") --> CODE("2. Implement")
+        CODE --> COV("3. Coverage")
+        COV --> DOCS("4. Docs")
+    end
+
+    IMPL --> QG["Quality gates<br/>tests + linter + build<br/>deterministic, 0 tokens"]
+    QG --> QGD{"all green?<br/>checked against baseline"}
+    QGD -->|"no — newly broken"| IMPL
+
+    QGD -->|yes| RC("Review: Correctness")
+    QGD -->|yes| RS("Review: Security")
+    QGD -->|yes| RQ("Review: Code Quality")
+
+    RC --> CTRL("Controller<br/>aggregates all reviews")
+    RS --> CTRL
+    RQ --> CTRL
+
+    CTRL --> VOTE{"at least 2 of 3<br/>say OK?"}
+    VOTE -->|yes| FIN
+    VOTE -->|no| SEV{"severity<br/>above threshold?<br/>e.g. 80%"}
+    SEV -->|"no — minor stuff"| FIN
+    SEV -->|yes| FU{"follow-up ticket<br/>feasible?"}
+    FU -->|"yes — 90% works"| FUA("Follow-up agent<br/>remaining scope as new issue")
+    FUA --> FIN
+    FU -->|"no — code doesn't run at all"| ATT{"attempt count > N?"}
+    ATT -->|no| IMPL
+    ATT -->|yes| SPLIT("Split agent<br/>original ticket into 3-5 sub-tickets<br/>close original, revert code")
+
+    FIN("Finalize agent<br/>commit, PR, close issue") --> DONE([done])
+    SPLIT --> RESTART([new smaller issues<br/>harness starts over])
+
+    classDef agent fill:#0072B2,stroke:#023d5e,color:#ffffff
+    classDef det fill:#D55E00,stroke:#7a3600,color:#ffffff
+    classDef dec fill:#E69F00,stroke:#7a5300,color:#111111
+    classDef term fill:#3f3f46,stroke:#18181b,color:#ffffff
+    class READ,RES,TDD,CODE,COV,DOCS,RC,RS,RQ,CTRL,FUA,SPLIT,FIN agent
+    class BASE,QG det
+    class QGD,VOTE,SEV,FU,ATT dec
+    class START,DONE,RESTART term

@@ -1,0 +1,8 @@
+.DS_Store
+*.swp
+*~
+
+# Arbeitsdateien, die der Workflow erzeugt — gehoeren nicht ins Repository
+Context.md
+TODO.md
+Analyse.md

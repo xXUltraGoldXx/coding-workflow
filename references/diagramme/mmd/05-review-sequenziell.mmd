@@ -1,0 +1,10 @@
+flowchart TB
+    I1("Impl v1") --> C1("Correctness")
+    C1 -->|"'not like this'"| I2("Impl v2")
+    I2 --> C2("Correctness ok") --> S2("Security")
+    S2 -->|"'not like this'"| I3("Impl v3")
+    I3 --> S3("Security ok") --> Q3("Quality")
+    Q3 -->|"'not clean code'"| I4("Impl v4")
+
+    classDef bad fill:#D55E00,stroke:#7a3600,color:#ffffff
+    class I1,I2,I3,I4,C1,C2,S2,S3,Q3 bad
