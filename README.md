@@ -38,12 +38,32 @@ Der Ordnername bestimmt, wie der Skill heißt. Heißt er `coding-workflow`,
 lädt ihn Claude über `/coding-workflow` oder auf Zuruf („Nutze bitte den
 coding-workflow").
 
-Danach einmalig in `SKILL.md` den eigenen Namen eintragen — sonst antwortet
-Claude ohne Anrede:
+Außerdem den Slash-Befehl für die Einrichtung ablegen:
 
-```markdown
-> **Nutzername:** `Dein Name`
+```bash
+mkdir -p ~/.claude/commands
+cp ~/.claude/skills/coding-workflow/commands/cw-install.md ~/.claude/commands/
 ```
+
+### Einrichtung mit `/cw-install`
+
+Claude Code neu starten und `/cw-install` eingeben. Der Befehl fragt:
+
+1. deinen **Namen** (Pflicht, ohne Namen keine Installation),
+2. die **Standard-Projektgröße**: `klein`, `mittel`, `gross` oder `auto` (Standard: der Skill entscheidet je Aufgabe selbst),
+3. ob die Einstellung global (`~/.claude/coding-workflow.json`) oder nur für das aktuelle Projekt (`.claude/coding-workflow.json`) gelten soll.
+
+Beispiel:
+
+```text
+> /cw-install
+Wie heißt du? Max
+Standard-Projektgröße (klein / mittel / gross / auto) [auto]: auto
+Global oder nur dieses Projekt? global
+Gespeichert in ~/.claude/coding-workflow.json: {"name": "Max", "standard_groesse": "auto"}
+```
+
+Die Datei lässt sich auch von Hand anlegen. Eine Projektdatei überschreibt die globale. Ohne Namen redet der Skill neutral und weist einmal auf `/cw-install` hin.
 
 Der Skill bleibt für die ganze Sitzung aktiv. Abschalten mit „Workflow aus"
 oder „normaler Modus".
@@ -109,6 +129,7 @@ falschen Zuschnitt, nicht für ein zu schwaches Modell.
 
 ```
 SKILL.md                     der Skill selbst — verbindliche Regeln
+commands/cw-install.md        Slash-Befehl /cw-install (Einrichtung)
 references/harness.md        Harness-Modell, Review-Panel, Data Contracts
 references/diagramme/light/  14 Diagramme als PNG
 references/diagramme/mmd/    dieselben Diagramme als Mermaid-Quelle

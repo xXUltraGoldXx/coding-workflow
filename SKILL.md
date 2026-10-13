@@ -1,6 +1,6 @@
 ---
 name: coding-workflow
-description: Globaler, dauerhaft aktiver und token-effizienter Entwicklungs-Workflow für alle Coding-, Analyse-, Refactoring-, Debugging-, Review- und Projektaufgaben. Immer auf Deutsch antworten, den Nutzer mit seinem Namen ansprechen, zuerst planen, Projektdateien analysieren und TODO.md, Analyse.md sowie Context.md aktuell halten. Die Umsetzung darf erst nach ausdrücklicher Bestätigung des Nutzers beginnen.
+description: Globaler, dauerhaft aktiver und token-effizienter Entwicklungs-Workflow für alle Coding-, Analyse-, Refactoring-, Debugging-, Review- und Projektaufgaben. Auf Deutsch antworten (anpassbar, siehe Grundregeln), zuerst planen, Projektdateien analysieren und TODO.md, Analyse.md sowie Context.md aktuell halten. Drei Stufen (klein/mittel/groß) bestimmen den Aufwand; bei Stufe groß beginnt die Umsetzung erst nach ausdrücklicher Bestätigung des Nutzers.
 ---
 
 # Globaler Coding-Workflow
@@ -11,24 +11,56 @@ Dieser Skill ist dauerhaft aktiv, sobald er in einer Sitzung einmal geladen wurd
 
 Er wird ausschließlich durch eine ausdrückliche Anweisung des Nutzers deaktiviert, zum Beispiel „Workflow aus“ oder „normaler Modus“.
 
+## Konfiguration
+
+Der Befehl `/cw-install` legt die Datei `coding-workflow.json` an:
+
+```json
+{"name": "Max", "standard_groesse": "auto"}
+```
+
+- Globale Datei: `~/.claude/coding-workflow.json`. Eine Datei `.claude/coding-workflow.json` im Projekt überschreibt sie.
+- Zu Beginn der ersten Aufgabe einer Sitzung wird zuerst die Projektdatei, dann die globale Datei gelesen (fehlende Datei ist kein Fehler).
+- `name` ist die Anrede. Fehlt er (auch in der Datei), weist der Skill den Nutzer einmal pro Sitzung auf `/cw-install` hin und redet so lange neutral an. Als Rückfall darf ein Name aus der `CLAUDE.md` des Nutzers dienen.
+- `standard_groesse`: `auto` (Voreinstellung bei fehlender Datei) heißt, der Skill wählt die Stufe je Aufgabe selbst. `klein`, `mittel` oder `gross` ist der Ausgangspunkt; bei klar abweichender Aufgabe darf der Skill begründet in einer Zeile abweichen. Die Regel „Stufe groß erst nach ausdrücklicher Bestätigung“ gilt dabei immer: Eine Hochstufung auf groß wird nur vorgeschlagen und nicht stillschweigend übernommen.
+
 ## Grundregeln
 
 Dieser Skill gilt global für jedes Projekt und jede Entwicklungsaufgabe.
 
-Der Nutzer wird immer auf Deutsch und mit seinem Namen angesprochen:
+Sprache und Anrede sind Voreinstellungen: Antworten erfolgen auf Deutsch, und der Nutzer wird mit dem Namen aus der Konfiguration angesprochen (`<Name>`). Beispiel:
 
 > Hallo <Name>, …
 
-Den Namen einmal hier eintragen — er wird sonst nirgends gebraucht:
-
-> **Nutzername:** `<hier deinen Namen eintragen>`
-
-Ist keiner eingetragen, wird ohne Anrede geantwortet. Erfundene Namen sind
-schlimmer als gar keine.
+Die Anrede „Hallo“ nur in der ersten Antwort einer Aufgabe; danach reicht der Name.
 
 Jede Antwort erfolgt auf Deutsch, auch bei englischsprachiger Anfrage. Technische Bezeichner, Dateipfade, Code, Commit-Nachrichten und Fehlermeldungen bleiben unverändert in ihrer Originalsprache.
 
 Der Workflow dient dazu, Korrekturläufe, doppelte Analysen und unnötigen Tokenverbrauch zu reduzieren. Eine gründliche Planung vor der Umsetzung hat Vorrang vor einer schnellen, unklaren Implementierung.
+
+## Stufen: Klein, Mittel, Groß
+
+Jede Aufgabe bekommt zu Beginn genau eine Stufe. Die Stufe bestimmt, wie viel vom Ablauf unten gilt. Sie wird übernommen, wenn der Nutzer oder der Auftrag sie nennt (`Stufe: klein|mittel|groß`). Fehlt sie, gilt `standard_groesse` aus der Konfiguration (außer `auto`) als Ausgangspunkt; sonst wählt C1 die Stufe selbst, nennt sie in der ersten Antwort in einer Zeile mit Begründung und bietet die Auswahl an:
+
+> Stufe: mittel (normales Feature im Projekt). Anders gewünscht? klein / mittel / groß
+
+| | Klein | Mittel | Groß / kritisch |
+|---|---|---|---|
+| Wofür | Einstellungen, Texte, kleine Fixes, Betrieb, Doku | normale Features und Bugfixes in Projekten | Geld/Zahlungen live, Sicherheit/Rechte, Produktionsdaten, Kundenprojekte, große Features |
+| Rückfragen (1) | nur bei echten Blockern | nur offene Entscheidungen, gebündelt | vollständig |
+| Pflichtdateien | keine; Eintrag in vorhandene `todo.md` reicht | `TODO.md`, `Analyse.md`, `Context.md` kurz | alle drei vollständig |
+| Plan + Okay (3) | entfällt | Plan in 3–5 Zeilen; Okay nur, wenn der Nutzer nicht schon „mach“ / „entscheide selbst“ gesagt hat | Pflicht: Plan vorlegen, auf ausdrückliches Okay warten |
+| Harness-Graph (4) | entfällt | kurze Schrittfolge in `TODO.md` | Graph; Mermaid erst ab ca. 5 Jobs oder parallelen Zweigen |
+| Umsetzung (5/6) | C3 oder C2; Baseline nur, wenn Tests existieren | C2; Baseline + Quality Gates | C2 parallel; Baseline, Test zuerst, Quality Gates |
+| Review (7) | kein Review-Agent; C1 prüft Diff kurz | **ein** C2-Review-Agent mit allen drei Sichtweisen (Correctness, Security, Quality) im Befundformat aus 7.1 | 3er-Panel aus 7.1 **plus** abschließendes Opus-Review bei Sicherheit/Geld/Kundendaten |
+| Versuchszähler | – | max. 3 | max. 3, danach Aufgabe neu schneiden |
+
+Regeln:
+
+- Im Zweifel die höhere Stufe. Abschnitt 10 (Nicht delegieren) gilt in jeder Stufe.
+- Stellt sich während der Arbeit heraus, dass die Aufgabe größer oder kritischer ist, wird hochgestuft und das kurz gemeldet. Herabstufen nur mit Zustimmung des Nutzers.
+- Test zuerst (6.2) gilt nur für Code, nicht für Server-Konfiguration, Tickets oder Betrieb.
+- Alle folgenden Abschnitte beschreiben die Stufe **Groß**. Für Klein und Mittel gilt die Tabelle oben vorrangig.
 
 ## Verbindlicher Ablauf
 
@@ -212,7 +244,7 @@ Der Plan muss enthalten:
 
 Die Planung wird dem Nutzer auf Deutsch präsentiert. Danach muss aktiv nach fehlenden Entscheidungen gefragt werden.
 
-Die Umsetzung beginnt ausschließlich nach einem eindeutigen Okay des Nutzers, zum Beispiel:
+Bei Stufe groß beginnt die Umsetzung ausschließlich nach einem eindeutigen Okay des Nutzers (Stufe mittel: siehe Stufen-Tabelle), zum Beispiel:
 
 - „Okay“
 - „Umsetzen“
@@ -254,15 +286,18 @@ Die Klasse hängt am Job, nicht am Projekt. Es gilt immer: die billigste Klasse,
 
 | Klasse | Modell | Ausführung | Zuständig für |
 |---|---|---|---|
-| C1 | Opus | Hauptthread | Planung, Harness-Entwurf, Architektur, Sicherheit, Controller-Entscheidung, Synthese widersprüchlicher Ergebnisse, unklare Fehlerursache nach einem Fehlversuch |
-| C2 | Sonnet | `Agent` mit `model: "sonnet"` | Routineimplementierung, Routine-Refactoring, einfache bis mittlere Bugfixes, Review-Feedback umsetzen, die Review-Agenten des Panels |
-| C3 | Haiku | `Agent` mit `model: "haiku"` | Reine Suche, Formatieren, Renaming, Doku- und README-Änderungen, Commit-Nachricht formulieren, kleine Umformulierungen ohne technische Entscheidung |
+| C0 (optional) | stärkstes verfügbares Modell | `Agent` mit dem Modell-Parameter des stärksten verfügbaren Modells, falls vorhanden | NUR für hochkomplexe Fälle: Aufgaben ohne erkennbaren Lösungsweg, festgefahrene Fehleranalyse (C1 kommt nach eigenem Versuch nicht weiter), architektur­kritische Entwürfe mit vielen Wechselwirkungen. Teuerste Klasse — Einsatz immer kurz begründen. |
+| C1 | Opus 5.5 | Hauptthread | Planung, Harness-Entwurf, Architektur, Sicherheit, Controller-Entscheidung, Synthese widersprüchlicher Ergebnisse, unklare Fehlerursache nach einem Fehlversuch |
+| C2 | Sonnet 5.5 | `Agent` mit `model: "sonnet"` | Routineimplementierung, Routine-Refactoring, einfache bis mittlere Bugfixes, Review-Feedback umsetzen, die Review-Agenten des Panels |
+| C3 | Haiku 5.5 | `Agent` mit `model: "haiku"` | Reine Suche, Formatieren, Renaming, Doku- und README-Änderungen, Commit-Nachricht formulieren, kleine Umformulierungen ohne technische Entscheidung |
+
+Grundregel der Modellwahl: **Opus analysiert und reviewt, Sonnet und Haiku bauen.** Die Modellnamen stehen für die jeweils aktuelle Stufe der Modellfamilie (hier Claude 5: Opus 5.5, Sonnet 5.5, Haiku 5.5); bei neuen Versionen ändert sich nur die Tabelle, nicht der Ablauf. Das Hauptmodell stellt der Nutzer in Claude Code selbst ein (`/model`).
 
 Typisches Muster: C1 plant, mehrere C2 arbeiten parallel, C1 synthetisiert, C3 macht den Feinschliff.
 
 Ein Skill kann das laufende Hauptmodell nicht selbst umschalten. Implementierungsaufgaben müssen deshalb tatsächlich über einen Agenten mit `model: "sonnet"` delegiert werden.
 
-Eskalation: Scheitert ein C3-Job zweimal, übernimmt C2. Scheitert ein C2-Job zweimal an derselben Stelle, übernimmt C1 die Analyse — nicht ein dritter C2-Versuch.
+Eskalation: Scheitert ein C3-Job zweimal, übernimmt C2. Scheitert ein C2-Job zweimal an derselben Stelle, übernimmt C1 die Analyse — nicht ein dritter C2-Versuch. Kommt auch C1 nach eigenem Versuch nicht zu einer Lösung oder ist die Aufgabe von vornherein erkennbar hochkomplex, wird sie an einen C0-Agenten übergeben (falls kein C0 verfügbar ist, bleibt es bei C1 und die Aufgabe wird neu zugeschnitten) — mit vollständigem Kontext (Context.md, Analyse.md, relevanter TODO-Abschnitt, bisherige Fehlversuche mit datei:zeile-Belegen). Die Sparsamkeitsregel bleibt davon unberührt: Standard ist immer die billigste Klasse, die den Job zuverlässig schafft; C0 ist Ausnahme, nie Default.
 
 ## 6. Umsetzung
 
@@ -315,6 +350,8 @@ Ein Review durch Agenten auf Code, der die Gates nicht besteht, ist verbrannter 
 ### Standardauftrag für C2 (Sonnet)
 
 ```text
+Stufe: <klein|mittel|groß> – bei klein/mittel entfallen die Teile, die die Stufen-Tabelle ausnimmt.
+
 Lies zuerst:
 - CONVENTIONS.md
 - Analyse.md
@@ -424,7 +461,7 @@ Der Controller ist immer C1 im Hauptthread und wird nicht delegiert. Er sammelt 
 2. Sonst: höchste Schwere unter 80 → Abschluss, die offenen Kleinbefunde werden in `TODO.md` unter „Offene Punkte“ dokumentiert.
 3. Sonst: Der Kern funktioniert und nur ein abgrenzbarer Rest fehlt → Rest-Scope als eigener Punkt unter „Follow-Up“ in `TODO.md`, Hauptteil abschließen. Kein Neuanfang für zehn Prozent Restarbeit.
 4. Sonst: Versuchszähler prüfen. Zähler kleiner oder gleich 3 → das gebündelte Feedback aller drei Reviewer in **einem** Auftrag zurück an C2, Zähler erhöhen.
-5. Sonst, Zähler über 3: Abbruch statt weiterer Runde. Die Aufgabe wird in drei bis fünf kleinere Teilaufgaben zerlegt, in `TODO.md` festgehalten und dem Nutzer mit dem neuen Zuschnitt vorgelegt. Der bisherige Stand wird nur nach seiner ausdrücklichen Zustimmung verworfen.
+5. Sonst, Zähler über 3: Abbruch statt weiterer Runde. Die Aufgabe wird in drei bis fünf kleinere Teilaufgaben zerlegt, in `TODO.md` festgehalten und dem Nutzer mit dem neuen Zuschnitt vorgelegt. Der bisherige Stand wird nur nach dessen ausdrücklicher Zustimmung verworfen.
 
 Der Versuchszähler steht in `TODO.md` und wird bei jeder Rückgabe an die Implementierung erhöht. Er ist hart. Drei gescheiterte Runden sind ein Zeichen für einen falschen Aufgabenzuschnitt, nicht für einen zu schwachen Agenten.
 
@@ -447,7 +484,7 @@ Befunde in `Analyse.md` werden in fester Form notiert:
 ```markdown
 - id: A1
   ort: `pfad/zur/datei.php:412`
-  zitat: "wsk_integrity_check( $paths, 500 );"
+  zitat: "$items = array_slice( $items, 0, 500 );"
   befund: Findings werden bei 500 Einträgen abgeschnitten
   relevanz: hoch
 ```
@@ -505,10 +542,10 @@ Eine Aufgabe gilt erst als abgeschlossen, wenn:
 - `Context.md` den aktuellen Stand widerspiegelt,
 - die Quality Gates grün gegen die Baseline sind,
 - relevante Tests und Prüfungen ausgeführt wurden,
-- das Review-Panel gelaufen und die Controller-Entscheidung dokumentiert ist,
+- das zur Stufe passende Review gelaufen und die Controller-Entscheidung dokumentiert ist (Stufe klein: Diff-Sichtung durch C1),
 - offene Punkte ausdrücklich dokumentiert sind.
 
-Die Abschlussantwort erfolgt immer auf Deutsch und beginnt mit dem Namen des Nutzers. Sie enthält kurz:
+Die Abschlussantwort erfolgt in der eingestellten Sprache und beginnt (falls konfiguriert) mit dem Namen des Nutzers. Sie enthält kurz:
 
 - was umgesetzt wurde,
 - welche Dateien geändert wurden,
