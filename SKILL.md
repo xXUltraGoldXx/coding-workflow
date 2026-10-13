@@ -1,6 +1,6 @@
 ---
 name: coding-workflow
-description: A global, always-on, token-efficient development workflow for all coding, analysis, refactoring, debugging, review, and project tasks. Always reply in English, address the user by name, plan before implementing, analyze project files, and keep TODO.md, Analyse.md, and Context.md up to date. Implementation may only begin after the user has explicitly confirmed it.
+description: A global, always-on, token-efficient development workflow for all coding, analysis, refactoring, debugging, review, and project tasks. Reply in English (configurable, see Ground rules), plan before implementing, analyze project files, and keep TODO.md, Analyse.md, and Context.md up to date. Three levels (small/medium/large) set the effort; for level large, implementation may only begin after the user has explicitly confirmed it.
 ---
 
 # Global Coding Workflow
@@ -11,23 +11,56 @@ This skill stays active for the rest of the session once it has been loaded once
 
 It is deactivated only by an explicit instruction from the user, for example "workflow off" or "normal mode".
 
+## Configuration
+
+The `/cw-install` command creates the file `coding-workflow.json`:
+
+```json
+{"name": "Max", "default_size": "auto"}
+```
+
+- Global file: `~/.claude/coding-workflow.json`. A file `.claude/coding-workflow.json` in the project overrides it.
+- At the start of the first task of a session, the project file is read first, then the global file (a missing file is not an error).
+- `name` is the form of address. If it is missing (also in the file), the skill points the user to `/cw-install` once per session and addresses them neutrally until then. As a fallback, a name from the user's `CLAUDE.md` may be used.
+- `default_size`: `auto` (default when the file is missing) means the skill picks the level per task itself. `small`, `medium` or `large` is the starting point; for a clearly different task the skill may deviate, with a one-line reason. The rule "level large only after explicit confirmation" always applies: moving up to large is only proposed, never adopted silently.
+
 ## Ground rules
 
 This skill applies globally, to every project and every development task.
 
-The user is always addressed in English and by name:
+Language and form of address are defaults: replies are in English, and the user is addressed by the name from the configuration (`<Name>`). Example:
 
 > Hello <Name>, …
 
-Enter the name once here — it isn't needed anywhere else:
+"Hello" only in the first reply of a task; after that the name is enough.
 
-> **User name:** `<enter your name here>`
-
-If none is entered, replies go out without a salutation. A made-up name is worse than none at all.
-
-Every reply is in English, even for a request written in another language. Technical identifiers, file paths, code, commit messages, and error messages stay in their original language unchanged.
+Replies are in English, even for a request written in another language. Technical identifiers, file paths, code, commit messages, and error messages stay in their original language unchanged.
 
 The workflow exists to cut down on correction rounds, duplicate analysis, and wasted tokens. Thorough planning before implementation takes priority over a fast, unclear implementation.
+
+## Levels: Small, Medium, Large
+
+Every task gets exactly one level at the start. The level determines how much of the process below applies. It is adopted if the user or the brief names it (`Level: small|medium|large`). If it is missing, `default_size` from the configuration (unless `auto`) is the starting point; otherwise C1 picks the level itself, names it in the first reply in one line with a reason, and offers the choice:
+
+> Level: medium (normal feature in the project). Prefer another? small / medium / large
+
+| | Small | Medium | Large / critical |
+|---|---|---|---|
+| Used for | settings, texts, small fixes, operations, docs | normal features and bug fixes in projects | live money/payments, security/permissions, production data, customer projects, large features |
+| Clarifying questions (1) | only for real blockers | only open decisions, bundled | complete |
+| Mandatory files | none; an entry in an existing `todo.md` is enough | `TODO.md`, `Analyse.md`, `Context.md`, short | all three, complete |
+| Plan + go-ahead (3) | omitted | plan in 3–5 lines; go-ahead only if the user has not already said "go" / "decide yourself" | mandatory: present the plan, wait for explicit go-ahead |
+| Harness graph (4) | omitted | short sequence of steps in `TODO.md` | graph; Mermaid only from about 5 jobs or parallel branches |
+| Implementation (5/6) | C3 or C2; baseline only if tests exist | C2; baseline + quality gates | C2 in parallel; baseline, test first, quality gates |
+| Review (7) | no review agent; C1 checks the diff briefly | **one** C2 review agent with all three perspectives (correctness, security, quality) in the finding format from 7.1 | 3-reviewer panel from 7.1 **plus** a final Opus review for security/money/customer data |
+| Attempt counter | – | max. 3 | max. 3, then re-slice the task |
+
+Rules:
+
+- When in doubt, the higher level. Section 10 (Do not delegate) applies at every level.
+- If it turns out during the work that the task is larger or more critical, move up and report it briefly. Moving down only with the user's consent.
+- Test first (6.2) applies only to code, not to server configuration, tickets or operations.
+- All following sections describe level **Large**. For Small and Medium, the table above takes precedence.
 
 ## Binding process
 
@@ -211,7 +244,7 @@ The plan must include:
 
 The plan is presented to the user in English. Afterward, missing decisions must be actively asked about.
 
-Implementation begins only after an unambiguous go-ahead from the user, for example:
+At level large, implementation begins only after an unambiguous go-ahead from the user (level medium: see the levels table), for example:
 
 - "Okay"
 - "Go ahead"
@@ -253,15 +286,18 @@ The class is attached to the job, not the project. The rule is always: the cheap
 
 | Class | Model | Execution | Responsible for |
 |---|---|---|---|
-| C1 | Opus | Main thread | Planning, harness design, architecture, security, controller decision, synthesis of conflicting results, unclear root cause after a failed attempt |
-| C2 | Sonnet | `Agent` with `model: "sonnet"` | Routine implementation, routine refactoring, simple to medium bug fixes, applying review feedback, the panel's review agents |
-| C3 | Haiku | `Agent` with `model: "haiku"` | Pure search, formatting, renaming, doc and README changes, drafting commit messages, small rewordings without technical decisions |
+| C0 (optional) | strongest available model | `Agent` with the model parameter of the strongest available model, if any | ONLY for highly complex cases: tasks with no recognizable path to a solution, a stuck root-cause analysis (C1 gets nowhere after its own attempt), architecture-critical designs with many interactions. Most expensive class — always justify its use briefly. |
+| C1 | Opus 5.5 | Main thread | Planning, harness design, architecture, security, controller decision, synthesis of conflicting results, unclear root cause after a failed attempt |
+| C2 | Sonnet 5.5 | `Agent` with `model: "sonnet"` | Routine implementation, routine refactoring, simple to medium bug fixes, applying review feedback, the panel's review agents |
+| C3 | Haiku 5.5 | `Agent` with `model: "haiku"` | Pure search, formatting, renaming, doc and README changes, drafting commit messages, small rewordings without technical decisions |
+
+Model rule: **Opus analyses and reviews, Sonnet and Haiku build.** The model names stand for the current tier of the model family (here Claude 5: Opus 5.5, Sonnet 5.5, Haiku 5.5); with new versions only the table changes, not the process. The user sets the main model in Claude Code itself (`/model`).
 
 Typical pattern: C1 plans, several C2 work in parallel, C1 synthesizes, C3 does the finishing touches.
 
 A skill cannot switch the running main model by itself. Implementation tasks must therefore actually be delegated through an agent with `model: "sonnet"`.
 
-Escalation: if a C3 job fails twice, C2 takes over. If a C2 job fails twice at the same spot, C1 takes over the analysis — not a third C2 attempt.
+Escalation: if a C3 job fails twice, C2 takes over. If a C2 job fails twice at the same spot, C1 takes over the analysis — not a third C2 attempt. If C1 also reaches no solution after its own attempt, or the task is recognizably highly complex from the start, it is handed to a C0 agent (if no C0 is available, it stays with C1 and the task is re-sliced) — with full context (Context.md, Analyse.md, the relevant TODO section, previous failed attempts with file:line citations). The frugality rule is unaffected: the default is always the cheapest class that reliably handles the job; C0 is the exception, never the default.
 
 ## 6. Implementation
 
@@ -314,6 +350,8 @@ Running a review agent on code that fails the gates is wasted token spend.
 ### Standard task for C2 (Sonnet)
 
 ```text
+Level: <small|medium|large> – for small/medium, the parts the levels table exempts are omitted.
+
 Read first:
 - CONVENTIONS.md
 - Analyse.md
@@ -446,7 +484,7 @@ Findings in `Analyse.md` are recorded in a fixed form:
 ```markdown
 - id: A1
   location: `path/to/file.php:412`
-  quote: "wsk_integrity_check( $paths, 500 );"
+  quote: "$items = array_slice( $items, 0, 500 );"
   finding: Findings are truncated at 500 entries
   relevance: high
 ```
@@ -504,10 +542,10 @@ A task counts as complete only once:
 - `Context.md` reflects the current state,
 - the quality gates are green against the baseline,
 - relevant tests and checks have been run,
-- the review panel has run and the controller decision is documented,
+- the review matching the level has run and the controller decision is documented (level small: diff check by C1),
 - open items are explicitly documented.
 
-The completion reply is always in English and starts with the user's name. It briefly includes:
+The completion reply is in the configured language and starts (if configured) with the user's name. It briefly includes:
 
 - what was implemented,
 - which files were changed,

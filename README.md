@@ -35,12 +35,32 @@ git clone -b englisch https://github.com/xXUltraGoldXx/coding-workflow.git \
 The folder name is the skill name. Called `coding-workflow`, Claude loads it
 via `/coding-workflow` or on request ("please use the coding-workflow skill").
 
-Then set your name once in `SKILL.md` — otherwise Claude replies without a
-salutation:
+Also put the slash command for the setup in place:
 
-```markdown
-> **User name:** `Your name`
+```bash
+mkdir -p ~/.claude/commands
+cp ~/.claude/skills/coding-workflow/commands/cw-install.md ~/.claude/commands/
 ```
+
+### Setup with `/cw-install`
+
+Restart Claude Code and enter `/cw-install`. The command asks for:
+
+1. your **name** (required, no name means no installation),
+2. the **default project size**: `small`, `medium`, `large` or `auto` (default: the skill decides per task itself),
+3. whether the setting applies globally (`~/.claude/coding-workflow.json`) or only to the current project (`.claude/coding-workflow.json`).
+
+Example:
+
+```text
+> /cw-install
+What is your name? Max
+Default project size (small / medium / large / auto) [auto]: auto
+Global or this project only? global
+Saved to ~/.claude/coding-workflow.json: {"name": "Max", "default_size": "auto"}
+```
+
+The file can also be created by hand. A project file overrides the global one. Without a name, the skill addresses you neutrally and points to `/cw-install` once.
 
 The skill stays active for the whole session. Turn it off with "workflow off"
 or "normal mode".
@@ -108,6 +128,7 @@ point at the wrong task scope, not at a weak model.
 
 ```
 SKILL.md                     the skill itself — the binding rules
+commands/cw-install.md        slash command /cw-install (setup)
 references/harness.md        harness model, review panel, data contracts
 references/diagramme/light/  14 diagrams as PNG
 references/diagramme/mmd/    the same diagrams as Mermaid sources
