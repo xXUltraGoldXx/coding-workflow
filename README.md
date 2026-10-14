@@ -6,6 +6,15 @@ that expensive models only work where they are actually needed.
 
 > 🇩🇪 **Deutsche Fassung:** siehe Branch [`deutsch`](../../tree/deutsch).
 
+## Install via the plugin marketplace (recommended)
+
+```
+/plugin marketplace add xXUltraGoldXx/claude-plugins
+/plugin install coding-workflow@ultragold
+```
+
+The setup command is then available as `/coding-workflow:cw-install`. Update with `/plugin marketplace update ultragold`. The manual installation below remains as an alternative.
+
 ## The problem it solves
 
 Left to itself, a coding assistant tends to do three things: start writing
