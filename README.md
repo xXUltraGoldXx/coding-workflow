@@ -7,6 +7,15 @@ werden.
 
 > 🇬🇧 **English version:** switch to the [`englisch`](../../tree/englisch) branch.
 
+## Installation über den Plugin-Marktplatz (empfohlen)
+
+```
+/plugin marketplace add xXUltraGoldXx/claude-plugins
+/plugin install coding-workflow@ultragold
+```
+
+Danach steht der Einrichtungsbefehl als `/coding-workflow:cw-install` bereit. Aktualisieren mit `/plugin marketplace update ultragold`. Die manuelle Installation weiter unten bleibt als Alternative.
+
 ## Wofür das gut ist
 
 Ohne Führung neigt ein Coding-Assistent zu drei Dingen: Er fängt sofort an zu
